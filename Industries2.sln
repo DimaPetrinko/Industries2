@@ -1,5 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Items", "Items\Items.csproj", "{664A26A1-7105-4A07-ABED-12632F58BCC4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Resources", "Resources\Resources.csproj", "{A99C7B86-EF1D-48C9-BC84-B16ABC1B58B2}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core", "Core\Core.csproj", "{C7D9436E-14A5-46F1-9180-75199DA9E4D0}"
 EndProject
 Global
@@ -8,6 +12,14 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{664A26A1-7105-4A07-ABED-12632F58BCC4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{664A26A1-7105-4A07-ABED-12632F58BCC4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{664A26A1-7105-4A07-ABED-12632F58BCC4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{664A26A1-7105-4A07-ABED-12632F58BCC4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A99C7B86-EF1D-48C9-BC84-B16ABC1B58B2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A99C7B86-EF1D-48C9-BC84-B16ABC1B58B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A99C7B86-EF1D-48C9-BC84-B16ABC1B58B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A99C7B86-EF1D-48C9-BC84-B16ABC1B58B2}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C7D9436E-14A5-46F1-9180-75199DA9E4D0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C7D9436E-14A5-46F1-9180-75199DA9E4D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C7D9436E-14A5-46F1-9180-75199DA9E4D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
