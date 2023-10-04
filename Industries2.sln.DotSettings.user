@@ -11,8 +11,8 @@
 	<s:Boolean x:Key="/Default/ResxEditorPersonal/CheckedGroups/=FormsEntryPoint_002FMainForm/@EntryIndexedValue">False</s:Boolean>
 	<s:Boolean x:Key="/Default/ResxEditorPersonal/CheckedGroups/=WPFEntryPoint_002FProperties_002FResources/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/ResxEditorPersonal/Initialized/@EntryValue">True</s:Boolean>
-	<s:Boolean x:Key="/Default/UnloadedProject/UnloadedProjects/=3a103373_002Defef_002D4edd_002D805f_002D0f8e4945cab8_0023ConsoleEntryPoint/@EntryIndexedValue">True</s:Boolean>
-	<s:Boolean x:Key="/Default/UnloadedProject/UnloadedProjects/=70519463_002Daa28_002D4543_002D91e6_002D87e4653f6b92_0023ConsoleIndustriesPresentation/@EntryIndexedValue">True</s:Boolean>
+	
+	
 	
 	
 	</wpf:ResourceDictionary>
