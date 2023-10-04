@@ -9,7 +9,7 @@ namespace Resources.Configs.Implementation
 	{
 		private readonly Dictionary<ItemType, float> mValues;
 
-		public BinaryItemsLoadingTimeConfig(Dictionary<ItemType, float> values)
+		public BinaryItemsLoadingTimeConfig(IReadOnlyDictionary<ItemType, float> values)
 		{
 			mValues = Enum.GetValues(typeof(ItemType)).Cast<ItemType>()
 				.ToDictionary(t => t, t => values.TryGetValue(t, out var value) ? value : 0f);

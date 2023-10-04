@@ -27,7 +27,7 @@ namespace Industries.Model.Implementation
 		{
 			if (mData.Level == mConfig.MaxLevel)
 				throw new MaxIndustryLevelReachedException(
-					mData.Level + 1,
+					(byte)(mData.Level + 1),
 					$"Already at max level of {mConfig.MaxLevel}! Cannot level up further.");
 			mData.Level++;
 		}

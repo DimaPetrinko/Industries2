@@ -10,7 +10,7 @@ namespace Industries.Configs.Implementation
 		public BinaryIndustryProductionConfig(IEnumerable<Recipe> recipes)
 		{
 			mRecipes = recipes
-				.Select((recipe, i) => new { Index = (short)i, Recipe = recipe })
+				.Select((recipe, i) => new { Index = (short)(i + 1), Recipe = recipe })
 				.ToDictionary(p => p.Index, p => p.Recipe);
 		}
 

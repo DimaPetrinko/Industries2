@@ -4,7 +4,8 @@ namespace Industries.Data
 {
 	public interface IIndustryProgressionMutableData
 	{
-		event Action<int> LevelChanged;
-		int Level { get; set; }
+		event Action<byte> LevelChanged;
+
+		byte Level { get; set; }
 	}
 }

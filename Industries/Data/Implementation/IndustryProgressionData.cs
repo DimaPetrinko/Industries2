@@ -2,12 +2,13 @@
 
 namespace Industries.Data.Implementation
 {
-	public class IndustryProgressionData : IIndustryProgressionData, IIndustryProgressionMutableData
+	internal class IndustryProgressionData : IIndustryProgressionData, IIndustryProgressionMutableData
 	{
-		private int mLevel;
-		public event Action<int> LevelChanged;
+		private byte mLevel;
 
-		public int Level
+		public event Action<byte> LevelChanged;
+
+		public byte Level
 		{
 			get => mLevel;
 			set
