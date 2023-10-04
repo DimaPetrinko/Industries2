@@ -21,6 +21,7 @@ namespace Industries.Model.Tests
 	internal class IndustryTests
 	{
 		private IIndustry mIndustry;
+		private IIndustryStateMutableData mStateData;
 		private IIndustryProgressionMutableData mProgressionData;
 		private IIndustryStorageMutableData mInputStorageData;
 		private IIndustryStorageMutableData mOutputStorageData;
@@ -34,6 +35,7 @@ namespace Industries.Model.Tests
 
 			var recipe = CreateRecipe();
 
+			mStateData = new IndustryStateData(1);
 			mProgressionData = new IndustryProgressionData();
 			mInputStorageData = new IndustryStorageData();
 			mOutputStorageData = new IndustryStorageData();
@@ -120,6 +122,7 @@ namespace Industries.Model.Tests
 		)
 		{
 			return new Industry(
+				mStateData,
 				mProgressionData,
 				mInputStorageData,
 				mOutputStorageData,
@@ -155,6 +158,7 @@ namespace Industries.Model.Tests
 		{
 			Assert.IsFalse(mIndustry.CanLoadInput(new[] { new ResourcePackage(ItemType.Ore, 5) }));
 			Assert.IsFalse(mIndustry.CanUnloadOutput(new[] { new ResourcePackage(ItemType.Ore, 5) }));
+			Assert.IsFalse(mIndustry.CanProduce());
 		}
 
 		[Test]
@@ -390,6 +394,193 @@ namespace Industries.Model.Tests
 				mCts.Cancel();
 			}
 		}
+
+		[Test]
+		public void CanProduce_ReturnsFalse_WhenInputEmpty()
+		{
+			mProgressionData.Level = 1;
+			Assert.IsFalse(mIndustry.CanProduce());
+		}
+
+		[Test]
+		public void CanProduce_ReturnsFalse_WhenNotEnoughInput()
+		{
+			var recipe = new Recipe(
+				new[] { new ResourcePackage(ItemType.Goods, 2) },
+				new[] { new ResourcePackage(ItemType.Instruments, 2) }
+			);
+			mIndustry = CreateIndustry(
+				CreateProgressionConfig(),
+				CreateLoadingTimesConfig(),
+				recipe);
+
+			mProgressionData.Level = 1;
+			var resources = new[] { new ResourcePackage(ItemType.Goods, 1) };
+			mInputStorageData.AddResource(resources[0]);
+			Assert.IsFalse(mIndustry.CanProduce());
+		}
+
+		[Test]
+		public void CanProduce_ReturnsFalse_WhenOutputWillBeOverCapacity()
+		{
+			mProgressionData.Level = 1;
+			var resource = new ResourcePackage(ItemType.Planks, 49);
+			mOutputStorageData.AddResource(resource);
+			Assert.IsFalse(mIndustry.CanProduce());
+		}
+
+		[Test]
+		public void CanProduce_ReturnsFalse_IfStatusIsNotIdle()
+		{
+			mProgressionData.Level = 1;
+			mInputStorageData.AddResource(new ResourcePackage(ItemType.Wood, 5));
+			mStateData.Status = IndustryStatus.Producing;
+			Assert.IsFalse(mIndustry.CanProduce());
+			mStateData.Status = IndustryStatus.LoadingInput;
+			Assert.IsFalse(mIndustry.CanProduce());
+			mStateData.Status = IndustryStatus.LoadingOutput;
+			Assert.IsFalse(mIndustry.CanProduce());
+			mStateData.Status = IndustryStatus.UnloadingInput;
+			Assert.IsFalse(mIndustry.CanProduce());
+			mStateData.Status = IndustryStatus.UnloadingOutput;
+			Assert.IsFalse(mIndustry.CanProduce());
+		}
+
+		[Test]
+		public void CanProduce_ReturnsTrue_WhenEnoughInputAndOutputWillNotBeOverCapacity()
+		{
+			mProgressionData.Level = 1;
+			var inputResource = new ResourcePackage(ItemType.Wood, 2);
+			var outputResource = new ResourcePackage(ItemType.Planks, 4);
+			mInputStorageData.AddResource(inputResource);
+			mOutputStorageData.AddResource(outputResource);
+			Assert.IsTrue(mIndustry.CanProduce());
+		}
+
+		[Test]
+		public async Task LoadInput_ChangesStateAndRevertsAfterFinished()
+		{
+			mProgressionData.Level = 1;
+			var resources = new[] { new ResourcePackage(ItemType.Goods, 100) };
+
+			var statuses = new List<IndustryStatus>();
+			mStateData.StatusChanged += status => statuses.Add(status);
+			await mIndustry.LoadInput(resources, mCts.Token);
+
+			Assert.AreEqual(2, statuses.Count);
+			Assert.AreEqual(IndustryStatus.LoadingInput, statuses[0]);
+			Assert.AreEqual(IndustryStatus.Idle, statuses[1]);
+		}
+
+		[Test]
+		public async Task LoadInput_ChangesStateAndRevertsAfterCancelled()
+		{
+			Time.ResetTimeProvider();
+			mProgressionData.Level = 1;
+			var resources = new[] { new ResourcePackage(ItemType.Goods, 5) };
+
+			var statuses = new List<IndustryStatus>();
+			mStateData.StatusChanged += status => statuses.Add(status);
+			await Task.WhenAll(
+				mIndustry.LoadInput(resources, mCts.Token),
+				CancelAfter(200));
+
+			Assert.AreEqual(2, statuses.Count);
+			Assert.AreEqual(IndustryStatus.LoadingInput, statuses[0]);
+			Assert.AreEqual(IndustryStatus.Idle, statuses[1]);
+
+			async Task CancelAfter(int milliseconds)
+			{
+				await Time.Delay(milliseconds);
+				mCts.Cancel();
+			}
+		}
+
+		[Test]
+		public async Task UnloadOutput_ChangesStateAndRevertsAfterFinished()
+		{
+			mProgressionData.Level = 1;
+			var resources1 = new[] { new ResourcePackage(ItemType.Goods, 5) };
+			var resources2 = new[] { new ResourcePackage(ItemType.Goods, 100) };
+			mOutputStorageData.AddResource(resources1[0]);
+
+			var statuses = new List<IndustryStatus>();
+			mStateData.StatusChanged += status => statuses.Add(status);
+			await mIndustry.UnloadOutput(resources2, mCts.Token);
+
+			Assert.AreEqual(2, statuses.Count);
+			Assert.AreEqual(IndustryStatus.UnloadingOutput, statuses[0]);
+			Assert.AreEqual(IndustryStatus.Idle, statuses[1]);
+		}
+
+		[Test]
+		public async Task UnloadOutput_ChangesStateAndRevertsAfterCancelled()
+		{
+			Time.ResetTimeProvider();
+			mProgressionData.Level = 1;
+			var resources1 = new[] { new ResourcePackage(ItemType.Goods, 5) };
+			var resources2 = new[] { new ResourcePackage(ItemType.Goods, 3) };
+			mOutputStorageData.AddResource(resources1[0]);
+
+			var statuses = new List<IndustryStatus>();
+			mStateData.StatusChanged += status => statuses.Add(status);
+			await Task.WhenAll(
+				mIndustry.UnloadOutput(resources2, mCts.Token),
+				CancelAfter(200));
+
+			Assert.AreEqual(2, statuses.Count);
+			Assert.AreEqual(IndustryStatus.UnloadingOutput, statuses[0]);
+			Assert.AreEqual(IndustryStatus.Idle, statuses[1]);
+
+			async Task CancelAfter(int milliseconds)
+			{
+				await Time.Delay(milliseconds);
+				mCts.Cancel();
+			}
+		}
+
+		[Test]
+		public async Task Produce_ChangesStateAndRevertsAfterFinished()
+		{
+			mProgressionData.Level = 1;
+			mInputStorageData.AddResource(new ResourcePackage(ItemType.Wood, 1));
+
+			var statuses = new List<IndustryStatus>();
+			mStateData.StatusChanged += status => statuses.Add(status);
+			await mIndustry.Produce(mCts.Token);
+
+			Assert.AreEqual(4, statuses.Count);
+			Assert.AreEqual(IndustryStatus.UnloadingInput, statuses[0]);
+			Assert.AreEqual(IndustryStatus.Producing, statuses[1]);
+			Assert.AreEqual(IndustryStatus.LoadingOutput, statuses[2]);
+			Assert.AreEqual(IndustryStatus.Idle, statuses[3]);
+		}
+
+		[Test]
+		public async Task Produce_ChangesStateEachProductionCycle()
+		{
+			mProgressionData.Level = 1;
+			mInputStorageData.AddResource(new ResourcePackage(ItemType.Wood, 3));
+
+			var statuses = new List<IndustryStatus>();
+			mStateData.StatusChanged += status => statuses.Add(status);
+			await mIndustry.Produce(mCts.Token);
+
+			Assert.AreEqual(12, statuses.Count);
+			Assert.AreEqual(IndustryStatus.UnloadingInput, statuses[0]);
+			Assert.AreEqual(IndustryStatus.Producing, statuses[1]);
+			Assert.AreEqual(IndustryStatus.LoadingOutput, statuses[2]);
+			Assert.AreEqual(IndustryStatus.Idle, statuses[3]);
+			Assert.AreEqual(IndustryStatus.UnloadingInput, statuses[4]);
+			Assert.AreEqual(IndustryStatus.Producing, statuses[5]);
+			Assert.AreEqual(IndustryStatus.LoadingOutput, statuses[6]);
+			Assert.AreEqual(IndustryStatus.Idle, statuses[7]);
+			Assert.AreEqual(IndustryStatus.UnloadingInput, statuses[8]);
+			Assert.AreEqual(IndustryStatus.Producing, statuses[9]);
+			Assert.AreEqual(IndustryStatus.LoadingOutput, statuses[10]);
+			Assert.AreEqual(IndustryStatus.Idle, statuses[11]);
+		}
+
 
 		private static void AssertAreEqualDouble(double expected, double actual, double epsilon = 0.01f)
 		{

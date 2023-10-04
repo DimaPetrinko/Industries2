@@ -295,5 +295,93 @@ namespace Industries.Data.Tests
 			Assert.AreEqual(3, mData.CurrentAmount);
 			Assert.AreEqual(resource2, e.Resources.ToArray()[0]);
 		}
+
+		[Test]
+		public void Add_TriggersEvent()
+		{
+			var triggered = false;
+			var resource = new ResourcePackage(ItemType.Planks, 4);
+
+			mData.ResourceAdded += receivedResource => triggered = true;
+			mData.AddResource(resource);
+
+			Assert.IsTrue(triggered);
+		}
+
+		[Test]
+		public void Add_TriggersEvent_WithCorrectValue()
+		{
+			var receivedResource = new ResourcePackage();
+			var resource = new ResourcePackage(ItemType.Planks, 4);
+
+			mData.ResourceAdded += r => receivedResource = r;
+			mData.AddResource(resource);
+
+			Assert.AreEqual(resource, receivedResource);
+		}
+
+		[Test]
+		public void Add_WhenThrows_DoesNotTriggerEvent()
+		{
+			var triggered = false;
+			var resource = new ResourcePackage(ItemType.None, 4);
+
+			mData.ResourceAdded += receivedResource => triggered = true;
+			try
+			{
+				mData.AddResource(resource);
+			}
+			catch (Exception)
+			{
+			}
+
+			Assert.IsFalse(triggered);
+		}
+
+		[Test]
+		public void Remove_TriggersEvent()
+		{
+			var triggered = false;
+			var resource1 = new ResourcePackage(ItemType.Planks, 8);
+			var resource2 = new ResourcePackage(ItemType.Planks, 4);
+
+			mData.AddResource(resource1);
+			mData.ResourceRemoved += receivedResource => triggered = true;
+			mData.RemoveResource(resource2);
+
+			Assert.IsTrue(triggered);
+		}
+
+		[Test]
+		public void Remove_TriggersEvent_WithCorrectValue()
+		{
+			var receivedResource = new ResourcePackage();
+			var resource1 = new ResourcePackage(ItemType.Planks, 8);
+			var resource2 = new ResourcePackage(ItemType.Planks, 4);
+
+			mData.AddResource(resource1);
+			mData.ResourceRemoved += r => receivedResource = r;
+			mData.RemoveResource(resource2);
+
+			Assert.AreEqual(resource2, receivedResource);
+		}
+
+		[Test]
+		public void Remove_WhenThrows_DoesNotTriggerEvent()
+		{
+			var triggered = false;
+			var resource = new ResourcePackage(ItemType.None, 4);
+
+			mData.ResourceRemoved += receivedResource => triggered = true;
+			try
+			{
+				mData.RemoveResource(resource);
+			}
+			catch (Exception)
+			{
+			}
+
+			Assert.IsFalse(triggered);
+		}
 	}
 }

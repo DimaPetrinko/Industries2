@@ -1,8 +1,8 @@
-﻿namespace Industries.Configs
+﻿using Core.Configs;
+
+namespace Industries.Configs
 {
-	public interface IIndustryProgressionConfig
+	public interface IIndustryProgressionConfig : IProgressionConfig<IIndustryLevelConfig>
 	{
-		int MaxLevel { get; }
-		IIndustryLevelConfig GetConfigForLevel(int level);
 	}
 }

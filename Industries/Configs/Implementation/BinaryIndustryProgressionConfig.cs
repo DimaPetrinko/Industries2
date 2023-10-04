@@ -1,23 +1,39 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
-using Industries.Exceptions;
+using Core.Exceptions;
 
 namespace Industries.Configs.Implementation
 {
-	public class BinaryIndustryProgressionConfig : IIndustryProgressionConfig
+	internal class BinaryIndustryProgressionConfig : IIndustryProgressionConfig
 	{
 		private readonly IIndustryLevelConfig[] mLevelConfigs;
 
 		public BinaryIndustryProgressionConfig(IEnumerable<IIndustryLevelConfig> levelConfigs)
 		{
-			mLevelConfigs = levelConfigs.ToArray();
+			if (levelConfigs == null)
+			{
+				throw new ArgumentException("Level configs cannot be null");
+			}
+			var configs = levelConfigs.ToArray();
+			const int maxCount = byte.MaxValue - 1;
+			if (configs.Length > maxCount)
+			{
+				throw new ArgumentException($"Level configs count cannot be greater than {maxCount}");
+			}
+			if (configs.Any(c => c == null))
+			{
+				throw new ArgumentException($"Some level configs are null");
+			}
+
+			mLevelConfigs = configs;
 		}
 
-		public int MaxLevel => mLevelConfigs.Length;
+		public byte MaxLevel => (byte)mLevelConfigs.Length;
 
-		public IIndustryLevelConfig GetConfigForLevel(int level)
+		public IIndustryLevelConfig GetConfigForLevel(byte level)
 		{
-			if (level <= 0 || level > mLevelConfigs.Length)
+			if (level == 0 || level > MaxLevel)
 				throw new LevelConfigNotFoundException(level, $"Level {level} is not present in this config");
 
 			return mLevelConfigs[level - 1];

@@ -1,6 +1,6 @@
 ﻿namespace Industries.Configs.Implementation
 {
-	public class BinaryIndustryLevelConfig : IIndustryLevelConfig
+	internal class BinaryIndustryLevelConfig : IIndustryLevelConfig
 	{
 		public float ProductionTime { get; }
 		public float InputLoadingMultiplier { get; }

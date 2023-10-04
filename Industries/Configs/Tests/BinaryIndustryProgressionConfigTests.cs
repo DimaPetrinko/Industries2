@@ -1,5 +1,6 @@
-﻿using Industries.Configs.Implementation;
-using Industries.Exceptions;
+﻿using System;
+using Core.Exceptions;
+using Industries.Configs.Implementation;
 using NUnit.Framework;
 
 namespace Industries.Configs.Tests
@@ -55,6 +56,43 @@ namespace Industries.Configs.Tests
 		}
 
 		[Test]
+		public void Constructor_Throws_IfProvidedConfigsCollectionIsNull()
+		{
+			IIndustryLevelConfig[] configs = null;
+			Assert.Throws<ArgumentException>(() =>
+			{
+				var config = new BinaryIndustryProgressionConfig(configs);
+			});
+		}
+
+		[Test]
+		public void Constructor_Throws_IfMoreThan254ConfigsProvided()
+		{
+			var configs = new IIndustryLevelConfig[255];
+			Assert.Throws<ArgumentException>(() =>
+			{
+				var config = new BinaryIndustryProgressionConfig(configs);
+			});
+		}
+
+		[Test]
+		public void Constructor_Throws_IfAnyConfigIsNull()
+		{
+			var configs = new IIndustryLevelConfig[10];
+			for (var i = 0; i < configs.Length; i++)
+			{
+				if (i == 3)
+					configs[i] = null;
+				else
+					configs[i] = new BinaryIndustryLevelConfig(0, 0, 0, 0, 0, 0, 0);
+			}
+			Assert.Throws<ArgumentException>(() =>
+			{
+				var config = new BinaryIndustryProgressionConfig(configs);
+			});
+		}
+
+		[Test]
 		public void GetConfigForLevel_ReturnsConfig()
 		{
 			var config = mConfig.GetConfigForLevel(1);
@@ -67,12 +105,6 @@ namespace Industries.Configs.Tests
 		{
 			var e = Assert.Throws<LevelConfigNotFoundException>(() => mConfig.GetConfigForLevel(0));
 			Assert.AreEqual(0, e.Level);
-		}
-
-		[Test]
-		public void GetConfigForLevel_Throws_IfNegativeLevel()
-		{
-			Assert.Throws<LevelConfigNotFoundException>(() => mConfig.GetConfigForLevel(-1));
 		}
 
 		[Test]

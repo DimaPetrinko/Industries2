@@ -7,7 +7,7 @@ using Resources;
 
 namespace Industries.Configs.Tests
 {
-	public class BinaryIndustryProductionConfigTests
+	internal class BinaryIndustryProductionConfigTests
 	{
 		private IIndustryProductionConfig mConfig;
 
@@ -58,7 +58,7 @@ namespace Industries.Configs.Tests
 		public void GetRecipe_ReturnsExistingRecipe()
 		{
 			Recipe recipe = default;
-			Assert.DoesNotThrow(() => recipe = mConfig.GetRecipeById(3));
+			Assert.DoesNotThrow(() => recipe = mConfig.GetRecipeById(4));
 
 			Assert.AreEqual(ItemType.Wood, recipe.From.ToArray()[0].Type);
 			Assert.AreEqual(1, recipe.From.ToArray()[0].Amount);

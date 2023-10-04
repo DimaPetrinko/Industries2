@@ -13,4 +13,8 @@
       <PackageReference Include="NUnit" Version="3.13.3" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Factories\Tests\" />
+    </ItemGroup>
+
 </Project>

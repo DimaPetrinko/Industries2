@@ -4,9 +4,9 @@ namespace Industries.Exceptions
 {
 	public abstract class IndustryLevelException : Exception
 	{
-		public int Level { get; }
+		public byte Level { get; }
 
-		protected IndustryLevelException(int level, string message) : base(message)
+		protected IndustryLevelException(byte level, string message) : base(message)
 		{
 			Level = level;
 		}

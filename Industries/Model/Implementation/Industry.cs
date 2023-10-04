@@ -14,6 +14,7 @@ namespace Industries.Model.Implementation
 {
 	internal class Industry : IIndustry
 	{
+		private readonly IIndustryStateMutableData mStateData;
 		private readonly IIndustryProgressionMutableData mProgressionData;
 		private readonly IIndustryStorageMutableData mInputStorageData;
 		private readonly IIndustryStorageMutableData mOutputStorageData;
@@ -26,6 +27,7 @@ namespace Industries.Model.Implementation
 		private bool IsLocked => mProgressionData.Level == 0;
 
 		public Industry(
+			IIndustryStateMutableData stateData,
 			IIndustryProgressionMutableData progressionData,
 			IIndustryStorageMutableData inputStorageData,
 			IIndustryStorageMutableData outputStorageData,
@@ -34,6 +36,7 @@ namespace Industries.Model.Implementation
 			Recipe productionRecipe
 		)
 		{
+			mStateData = stateData;
 			mProgressionData = progressionData;
 			mInputStorageData = inputStorageData;
 			mOutputStorageData = outputStorageData;
@@ -44,7 +47,7 @@ namespace Industries.Model.Implementation
 			mProgressionData.LevelChanged += OnLevelChanged;
 		}
 
-		private void OnLevelChanged(int level)
+		private void OnLevelChanged(byte level)
 		{
 			mCurrentLevelConfig = mProgressionConfig.GetConfigForLevel(level);
 			mInputStorageData.CurrentCapacity = mCurrentLevelConfig.InputAreaCapacity;
@@ -55,51 +58,73 @@ namespace Industries.Model.Implementation
 		{
 			ThrowIfLocked();
 
-			while (mInputStorageData.CanRemoveResources(mProductionRecipe.From) &&
-			       mOutputStorageData.CanAddResources(mProductionRecipe.To))
+			while (CanProduce())
 			{
 				var undoActions = new List<Action>();
-
 				try
 				{
-					var inputLoadingTimes = GetLoadingTimesForResources(
-						mProductionRecipe.From,
-						mCurrentLevelConfig.InputUnloadingMultiplier);
-					await PerformLoadingAction(
-						inputLoadingTimes,
-						resource => mInputStorageData.CanRemoveResources(new[] { resource }),
-						resource =>
-						{
-							undoActions.Add(() => mInputStorageData.AddResource(resource));
-							mInputStorageData.RemoveResource(resource);
-						},
-						token);
-
-					await Time.Delay(TimeSpan.FromSeconds(mCurrentLevelConfig.ProductionTime), token);
-
-					var outputLoadingTimes = GetLoadingTimesForResources(
-						mProductionRecipe.To,
-						mCurrentLevelConfig.OutputLoadingMultiplier);
-					await PerformLoadingAction(
-						outputLoadingTimes,
-						resource => mOutputStorageData.CanAddResources(new[] { resource }),
-						resource =>
-						{
-							undoActions.Add(() => mOutputStorageData.RemoveResource(resource));
-							mOutputStorageData.AddResource(resource);
-						},
-						token);
+					await UnloadInput(undoActions, token);
+					await ProduceInternal(token);
+					await LoadOutput(undoActions, token);
 				}
 				catch (OperationCanceledException)
 				{
-					foreach (var undoAction in undoActions)
-					{
-						undoAction();
-					}
-
+					ExecuteUndoActions(undoActions);
 					break;
 				}
+				finally
+				{
+					ResetStatus();
+				}
 			}
+		}
+
+		private async Task UnloadInput(ICollection<Action> undoActions, CancellationToken token)
+		{
+			mStateData.Status = IndustryStatus.UnloadingInput;
+
+			var inputLoadingTimes = GetLoadingTimesForResources(
+				mProductionRecipe.From,
+				mCurrentLevelConfig.InputUnloadingMultiplier);
+			await PerformLoadingAction(
+				inputLoadingTimes,
+				resource => mInputStorageData.CanRemoveResources(new[] { resource }),
+				resource =>
+				{
+					undoActions.Add(() => mInputStorageData.AddResource(resource));
+					mInputStorageData.RemoveResource(resource);
+				},
+				token);
+		}
+
+		private async Task ProduceInternal(CancellationToken token)
+		{
+			mStateData.Status = IndustryStatus.Producing;
+			await Time.Delay(TimeSpan.FromSeconds(mCurrentLevelConfig.ProductionTime), token);
+		}
+
+		private async Task LoadOutput(ICollection<Action> undoActions, CancellationToken token)
+		{
+			mStateData.Status = IndustryStatus.LoadingOutput;
+
+			var outputLoadingTimes = GetLoadingTimesForResources(
+				mProductionRecipe.To,
+				mCurrentLevelConfig.OutputLoadingMultiplier);
+			await PerformLoadingAction(
+				outputLoadingTimes,
+				resource => mOutputStorageData.CanAddResources(new[] { resource }),
+				resource =>
+				{
+					undoActions.Add(() => mOutputStorageData.RemoveResource(resource));
+					mOutputStorageData.AddResource(resource);
+				},
+				token);
+		}
+
+		private static void ExecuteUndoActions(List<Action> undoActions)
+		{
+			foreach (var undoAction in undoActions)
+				undoAction();
 		}
 
 		public async Task LoadInput(IEnumerable<ResourcePackage> resources, CancellationToken token)
@@ -113,6 +138,7 @@ namespace Industries.Model.Implementation
 
 			try
 			{
+				mStateData.Status = IndustryStatus.LoadingInput;
 				await PerformLoadingAction(
 					loadingTimes,
 					resource => mInputStorageData.CanAddResources(new[] { resource }),
@@ -122,6 +148,10 @@ namespace Industries.Model.Implementation
 			}
 			catch (OperationCanceledException)
 			{
+			}
+			finally
+			{
+				ResetStatus();
 			}
 		}
 
@@ -135,6 +165,7 @@ namespace Industries.Model.Implementation
 
 			try
 			{
+				mStateData.Status = IndustryStatus.UnloadingOutput;
 				await PerformLoadingAction(
 					loadingTimes,
 					resource => mOutputStorageData.CanRemoveResources(new[] { resource }),
@@ -143,6 +174,10 @@ namespace Industries.Model.Implementation
 			}
 			catch (OperationCanceledException)
 			{
+			}
+			finally
+			{
+				ResetStatus();
 			}
 		}
 
@@ -206,14 +241,41 @@ namespace Industries.Model.Implementation
 			}
 		}
 
+		public bool CanProduce()
+		{
+			return !IsLocked
+			       && mStateData.Status == IndustryStatus.Idle
+			       && mInputStorageData.CanRemoveResources(mProductionRecipe.From)
+			       && mOutputStorageData.CanAddResources(mProductionRecipe.To);
+		}
+
 		public bool CanLoadInput(IEnumerable<ResourcePackage> resources)
 		{
-			return !IsLocked && mInputStorageData.CanAddResources(resources);
+			return CanLoadAnyInput() && mInputStorageData.CanAddResources(resources);
+		}
+
+		public bool CanLoadAnyInput()
+		{
+			return !IsLocked
+			       && mStateData.Status == IndustryStatus.Idle
+			       && mInputStorageData.CurrentAmount < mInputStorageData.CurrentCapacity;
 		}
 
 		public bool CanUnloadOutput(IEnumerable<ResourcePackage> requestedResources)
 		{
-			return !IsLocked && mOutputStorageData.CanRemoveResources(requestedResources);
+			return CanUnloadAnyOutput() && mOutputStorageData.CanRemoveResources(requestedResources);
+		}
+
+		public bool CanUnloadAnyOutput()
+		{
+			return !IsLocked
+			       && mStateData.Status == IndustryStatus.Idle
+			       && mOutputStorageData.CurrentAmount > 0;
+		}
+
+		private void ResetStatus()
+		{
+			mStateData.Status = IndustryStatus.Idle;
 		}
 	}
 }

@@ -9,6 +9,9 @@ namespace Industries.Data.Implementation
 {
 	internal class IndustryStorageData : IIndustryStorageData, IIndustryStorageMutableData
 	{
+		public event Action<ResourcePackage> ResourceAdded;
+		public event Action<ResourcePackage> ResourceRemoved;
+
 		private readonly Dictionary<ItemType, int> mResourcesLookup;
 		private ResourcePackage[] mResources;
 
@@ -36,7 +39,6 @@ namespace Industries.Data.Implementation
 
 		public bool CanAddResources(IEnumerable<ResourcePackage> resources)
 		{
-			if (CurrentAmount >= CurrentCapacity) return false;
 			var resourcesArray = resources as ResourcePackage[] ?? resources.ToArray();
 			if (resourcesArray.Any(r => r.Type == ItemType.None)) return false;
 			return CurrentAmount + resourcesArray.Select(r => r.Amount).Sum() <= CurrentCapacity;
@@ -44,7 +46,6 @@ namespace Industries.Data.Implementation
 
 		public bool CanRemoveResources(IEnumerable<ResourcePackage> resources)
 		{
-			if (CurrentAmount <= 0) return false;
 			var resourcesArray = resources as ResourcePackage[] ?? resources.ToArray();
 			if (resourcesArray.Any(r => r.Type == ItemType.None)) return false;
 			return resourcesArray.All(r => mResourcesLookup[r.Type] - r.Amount >= 0);
@@ -56,6 +57,7 @@ namespace Industries.Data.Implementation
 			mResourcesLookup[resource.Type] += resource.Amount;
 			CurrentAmount += resource.Amount;
 			ActualizeResourcesArray();
+			ResourceAdded?.Invoke(resource);
 		}
 
 		private void ThrowIfAdditionIsNotValid(ResourcePackage resource)
@@ -88,6 +90,7 @@ namespace Industries.Data.Implementation
 			mResourcesLookup[resource.Type] -= resource.Amount;
 			CurrentAmount -= resource.Amount;
 			ActualizeResourcesArray();
+			ResourceRemoved?.Invoke(resource);
 		}
 
 		private void ThrowIfRemovalIsNotValid(ResourcePackage resource)

@@ -15,7 +15,7 @@ namespace Resources
 
 		public override string ToString()
 		{
-			return $"{Type}, {Amount}";
+			return $"{Amount} {Type}";
 		}
 	}
 }

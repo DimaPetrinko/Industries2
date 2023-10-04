@@ -2,7 +2,7 @@
 {
 	public class InsufficientIndustryLevelException : IndustryLevelException
 	{
-		public InsufficientIndustryLevelException(int level, string message) : base(level, message)
+		public InsufficientIndustryLevelException(byte level, string message) : base(level, message)
 		{
 		}
 	}

@@ -5,7 +5,7 @@ using Resources.Configs.Implementation;
 
 namespace Resources.Configs.Tests
 {
-	public class BinaryItemsLoadingTimeConfigTests
+	internal class BinaryItemsLoadingTimeConfigTests
 	{
 		[Test]
 		public void Get_ReturnsValue()
