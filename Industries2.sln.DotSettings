@@ -3,4 +3,5 @@
 	<s:Boolean x:Key="/Default/Environment/Filtering/ExcludeCoverageFilters/=Industries_003B_002A_003BIndustries_002EConfigs_002ETests_002E_002A_003B_002A/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/Environment/Filtering/ExcludeCoverageFilters/=Industries_003B_002A_003BIndustries_002EData_002ETests_002E_002A_003B_002A/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/Environment/Filtering/ExcludeCoverageFilters/=Industries_003B_002A_003BIndustries_002EInitialization_002ETests_002E_002A_003B_002A/@EntryIndexedValue">True</s:Boolean>
-	<s:Boolean x:Key="/Default/Environment/Filtering/ExcludeCoverageFilters/=Industries_003B_002A_003BIndustries_002EModel_002ETests_002E_002A_003B_002A/@EntryIndexedValue">True</s:Boolean></wpf:ResourceDictionary>
+	<s:Boolean x:Key="/Default/Environment/Filtering/ExcludeCoverageFilters/=Industries_003B_002A_003BIndustries_002EModel_002ETests_002E_002A_003B_002A/@EntryIndexedValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/Environment/Filtering/ExcludeCoverageFilters/=Resources_003B_002A_003BResources_002EConfigs_002ETests_002E_002A_003B_002A/@EntryIndexedValue">True</s:Boolean></wpf:ResourceDictionary>

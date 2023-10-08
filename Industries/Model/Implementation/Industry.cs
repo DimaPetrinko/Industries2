@@ -19,7 +19,7 @@ namespace Industries.Model.Implementation
 		private readonly IIndustryStorageMutableData mInputStorageData;
 		private readonly IIndustryStorageMutableData mOutputStorageData;
 		private readonly IIndustryProgressionConfig mProgressionConfig;
-		private readonly IItemsLoadingTimeConfig mItemsLoadingTimeConfig;
+		private readonly IResourcesConfig mResourcesConfig;
 		private readonly Recipe mProductionRecipe;
 
 		private IIndustryLevelConfig mCurrentLevelConfig;
@@ -32,7 +32,7 @@ namespace Industries.Model.Implementation
 			IIndustryStorageMutableData inputStorageData,
 			IIndustryStorageMutableData outputStorageData,
 			IIndustryProgressionConfig progressionConfig,
-			IItemsLoadingTimeConfig itemsLoadingTimeConfig,
+			IResourcesConfig resourcesConfig,
 			Recipe productionRecipe
 		)
 		{
@@ -41,7 +41,7 @@ namespace Industries.Model.Implementation
 			mInputStorageData = inputStorageData;
 			mOutputStorageData = outputStorageData;
 			mProgressionConfig = progressionConfig;
-			mItemsLoadingTimeConfig = itemsLoadingTimeConfig;
+			mResourcesConfig = resourcesConfig;
 			mProductionRecipe = productionRecipe;
 
 			mProgressionData.LevelChanged += OnLevelChanged;
@@ -201,7 +201,7 @@ namespace Industries.Model.Implementation
 		{
 			return new ResourcePackageLoadingTime(
 				resource,
-				mItemsLoadingTimeConfig.GetLoadingTimeForItemType(resource.Type) * timeMultiplier);
+				mResourcesConfig.GetResourceConfig(resource.ResourceId).LoadingTime * timeMultiplier);
 		}
 
 		private static async Task PerformLoadingAction(
@@ -233,7 +233,7 @@ namespace Industries.Model.Implementation
 		{
 			for (var i = 0; i < resource.Amount; i++)
 			{
-				var onePieceOfResource = new ResourcePackage(resource.Type, 1);
+				var onePieceOfResource = new ResourcePackage(resource.ResourceId, 1);
 				if (!checkAction(onePieceOfResource)) return;
 				await Time.Delay(TimeSpan.FromSeconds(onePieceLoadingTime), token);
 				if (!checkAction(onePieceOfResource)) return;

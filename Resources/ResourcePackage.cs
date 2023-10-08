@@ -1,21 +1,19 @@
-﻿using Items;
-
-namespace Resources
+﻿namespace Resources
 {
 	public struct ResourcePackage
 	{
-		public ItemType Type { get; }
+		public short ResourceId { get; }
 		public int Amount { get; }
 
-		public ResourcePackage(ItemType type, int amount)
+		public ResourcePackage(short resourceId, int amount)
 		{
-			Type = type;
+			ResourceId = resourceId;
 			Amount = amount;
 		}
 
-		public override string ToString()
+		public string ToString(string name)
 		{
-			return $"{Amount} {Type}";
+			return $"{Amount} {name}";
 		}
 	}
 }

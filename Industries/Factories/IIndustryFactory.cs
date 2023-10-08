@@ -9,7 +9,7 @@ namespace Industries.Factories
 			short id,
 			Recipe productionRecipe,
 			IIndustryProgressionConfig progressionConfig,
-			IItemsLoadingTimeConfig itemsLoadingTimeConfig
+			IResourcesConfig resourcesConfig
 		);
 	}
 }
