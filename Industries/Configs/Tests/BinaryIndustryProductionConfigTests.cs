@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Industries.Configs.Implementation;
-using Items;
 using NUnit.Framework;
 using Resources;
 
@@ -18,38 +17,38 @@ namespace Industries.Configs.Tests
 			{
 				new Recipe(
 					new ResourcePackage[] { },
-					new[] { new ResourcePackage(ItemType.Wood, 1) }),
+					new[] { new ResourcePackage(1, 1) }),
 				new Recipe(
 					new ResourcePackage[] { },
-					new[] { new ResourcePackage(ItemType.Coal, 1) }),
+					new[] { new ResourcePackage(3, 1) }),
 				new Recipe(
 					new ResourcePackage[] { },
-					new[] { new ResourcePackage(ItemType.Ore, 1) }),
+					new[] { new ResourcePackage(4, 1) }),
 				new Recipe(
-					new[] { new ResourcePackage(ItemType.Wood, 1) },
-					new[] { new ResourcePackage(ItemType.Planks, 2) }),
-				new Recipe(
-					new[]
-					{
-						new ResourcePackage(ItemType.Coal, 1),
-						new ResourcePackage(ItemType.Ore, 1)
-					},
-					new[] { new ResourcePackage(ItemType.Metal, 2) }),
+					new[] { new ResourcePackage(1, 1) },
+					new[] { new ResourcePackage(2, 2) }),
 				new Recipe(
 					new[]
 					{
-						new ResourcePackage(ItemType.Planks, 1),
-						new ResourcePackage(ItemType.Metal, 1)
+						new ResourcePackage(3, 1),
+						new ResourcePackage(4, 1)
 					},
-					new[] { new ResourcePackage(ItemType.Instruments, 2) }),
+					new[] { new ResourcePackage(5, 2) }),
 				new Recipe(
 					new[]
 					{
-						new ResourcePackage(ItemType.Planks, 1),
-						new ResourcePackage(ItemType.Metal, 1),
-						new ResourcePackage(ItemType.Instruments, 1)
+						new ResourcePackage(2, 1),
+						new ResourcePackage(5, 1)
 					},
-					new[] { new ResourcePackage(ItemType.Goods, 2) }),
+					new[] { new ResourcePackage(6, 2) }),
+				new Recipe(
+					new[]
+					{
+						new ResourcePackage(2, 1),
+						new ResourcePackage(5, 1),
+						new ResourcePackage(6, 1)
+					},
+					new[] { new ResourcePackage(7, 2) }),
 			};
 			mConfig = new BinaryIndustryProductionConfig(recipes);
 		}
@@ -60,9 +59,9 @@ namespace Industries.Configs.Tests
 			Recipe recipe = default;
 			Assert.DoesNotThrow(() => recipe = mConfig.GetRecipeById(4));
 
-			Assert.AreEqual(ItemType.Wood, recipe.From.ToArray()[0].Type);
+			Assert.AreEqual(1, recipe.From.ToArray()[0].ResourceId);
 			Assert.AreEqual(1, recipe.From.ToArray()[0].Amount);
-			Assert.AreEqual(ItemType.Planks, recipe.To.ToArray()[0].Type);
+			Assert.AreEqual(2, recipe.To.ToArray()[0].ResourceId);
 			Assert.AreEqual(2, recipe.To.ToArray()[0].Amount);
 		}
 

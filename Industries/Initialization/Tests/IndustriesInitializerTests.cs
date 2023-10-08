@@ -4,6 +4,7 @@ using Core.Initialization.Implementation;
 using Industries.Factories;
 using Industries.Initialization.Implementation;
 using NUnit.Framework;
+using Resources.Initialization;
 
 namespace Industries.Initialization.Tests
 {
@@ -25,11 +26,14 @@ namespace Industries.Initialization.Tests
 
 			Assert.IsFalse(container.Has<IDictionary<short, IndustryHandle>>());
 
-			var configsInitializer = new IndustriesConfigsInitializer();
-			await configsInitializer.Run(container);
-
+			var resourcesFactoriesInitializer = new ResourcesFactoriesInitializer();
 			var industriesFactoriesInitializer = new IndustriesFactoriesInitializer();
+			var resourcesConfigsInitializer = new ResourcesConfigsInitializer();
+			var configsInitializer = new IndustriesConfigsInitializer();
+			await resourcesFactoriesInitializer.Run(container);
 			await industriesFactoriesInitializer.Run(container);
+			await resourcesConfigsInitializer.Run(container);
+			await configsInitializer.Run(container);
 
 			var initializer = new IndustriesInitializer();
 			await initializer.Run(container);

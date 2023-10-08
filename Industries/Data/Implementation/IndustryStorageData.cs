@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using Industries.Exceptions;
-using Items;
 using Resources;
+using Resources.Configs;
+using Resources.Exceptions;
 
 namespace Industries.Data.Implementation
 {
@@ -12,49 +13,48 @@ namespace Industries.Data.Implementation
 		public event Action<ResourcePackage> ResourceAdded;
 		public event Action<ResourcePackage> ResourceRemoved;
 
-		private readonly Dictionary<ItemType, int> mResourcesLookup;
+		private readonly IResourcesConfig mResourcesConfig;
+		private readonly Dictionary<short, int> mResourcesLookup;
 		private ResourcePackage[] mResources;
 
 		public int CurrentAmount { get; private set; }
 		public int CurrentCapacity { get; set; }
 		public IEnumerable<ResourcePackage> Resources => mResources;
 
-		public IndustryStorageData()
+		public IndustryStorageData(IResourcesConfig resourcesConfig)
 		{
+			mResourcesConfig = resourcesConfig;
+
 			CurrentAmount = 0;
 			CurrentCapacity = 0;
-			mResourcesLookup = GetDefaultResourcesLookup();
+			mResourcesLookup = GetDefaultResourcesLookup(resourcesConfig);
 			ActualizeResourcesArray();
 		}
 
-		private static Dictionary<ItemType, int> GetDefaultResourcesLookup()
+		private static Dictionary<short, int> GetDefaultResourcesLookup(IResourcesConfig resourcesConfig)
 		{
-			return Enum
-				.GetValues(typeof(ItemType))
-				.Cast<ItemType>()
-				.Where(t => t != ItemType.None)
-				.ToDictionary(t => t, _ => 0);
+			return resourcesConfig.AllResourceConfigs.ToDictionary(p => p.Key, _ => 0);
 		}
 
 
 		public bool CanAddResources(IEnumerable<ResourcePackage> resources)
 		{
 			var resourcesArray = resources as ResourcePackage[] ?? resources.ToArray();
-			if (resourcesArray.Any(r => r.Type == ItemType.None)) return false;
+			if (resourcesArray.Any(r => !mResourcesLookup.ContainsKey(r.ResourceId))) return false;
 			return CurrentAmount + resourcesArray.Select(r => r.Amount).Sum() <= CurrentCapacity;
 		}
 
 		public bool CanRemoveResources(IEnumerable<ResourcePackage> resources)
 		{
 			var resourcesArray = resources as ResourcePackage[] ?? resources.ToArray();
-			if (resourcesArray.Any(r => r.Type == ItemType.None)) return false;
-			return resourcesArray.All(r => mResourcesLookup[r.Type] - r.Amount >= 0);
+			if (resourcesArray.Any(r => !mResourcesLookup.ContainsKey(r.ResourceId))) return false;
+			return resourcesArray.All(r => mResourcesLookup[r.ResourceId] - r.Amount >= 0);
 		}
 
 		public void AddResource(ResourcePackage resource)
 		{
 			ThrowIfAdditionIsNotValid(resource);
-			mResourcesLookup[resource.Type] += resource.Amount;
+			mResourcesLookup[resource.ResourceId] += resource.Amount;
 			CurrentAmount += resource.Amount;
 			ActualizeResourcesArray();
 			ResourceAdded?.Invoke(resource);
@@ -66,28 +66,28 @@ namespace Industries.Data.Implementation
 			{
 				throw new IndustryStorageAdditionException(
 					new[] { resource },
-					$"Could not add {resource.ToString()} to the storage, because current capacity is exceeded");
+					$"Could not add {resource.ToString(GetResourceName(resource.ResourceId))} to the storage, because current capacity is exceeded");
 			}
 
-			if (resource.Type == ItemType.None)
+			if (!mResourcesLookup.ContainsKey(resource.ResourceId))
 			{
 				throw new IndustryStorageAdditionException(
 					new[] { resource },
-					$"Could not add {resource.ToString()} to the storage, because the type is {ItemType.None}");
+					$"Could not add {resource.ToString(GetResourceName(resource.ResourceId))} to the storage, because resource id {resource.ResourceId} is unknown");
 			}
 
 			if (CurrentAmount + resource.Amount > CurrentCapacity)
 			{
 				throw new IndustryStorageAdditionException(
 					new[] { resource },
-					$"Could not add {resource.ToString()} to the storage, because current capacity will be exceeded");
+					$"Could not add {resource.ToString(GetResourceName(resource.ResourceId))} to the storage, because current capacity will be exceeded");
 			}
 		}
 
 		public void RemoveResource(ResourcePackage resource)
 		{
 			ThrowIfRemovalIsNotValid(resource);
-			mResourcesLookup[resource.Type] -= resource.Amount;
+			mResourcesLookup[resource.ResourceId] -= resource.Amount;
 			CurrentAmount -= resource.Amount;
 			ActualizeResourcesArray();
 			ResourceRemoved?.Invoke(resource);
@@ -99,21 +99,21 @@ namespace Industries.Data.Implementation
 			{
 				throw new IndustryStorageRemovalException(
 					new[] { resource },
-					$"Could not remove {resource.ToString()} from the storage, because the storage is empty");
+					$"Could not remove {resource.ToString(GetResourceName(resource.ResourceId))} from the storage, because the storage is empty");
 			}
 
-			if (resource.Type == ItemType.None)
+			if (!mResourcesLookup.ContainsKey(resource.ResourceId))
 			{
 				throw new IndustryStorageRemovalException(
 					new[] { resource },
-					$"Could not remove {resource.ToString()} from the storage, because the type is {ItemType.None}");
+					$"Could not remove {resource.ToString(GetResourceName(resource.ResourceId))} from the storage, because resource id {resource.ResourceId} is unknown");
 			}
 
-			if (mResourcesLookup[resource.Type] - resource.Amount < 0)
+			if (mResourcesLookup[resource.ResourceId] - resource.Amount < 0)
 			{
 				throw new IndustryStorageRemovalException(
 					new[] { resource },
-					$"Could not remove {resource.ToString()} from the storage, because there's an insufficient amount");
+					$"Could not remove {resource.ToString(GetResourceName(resource.ResourceId))} from the storage, because there's an insufficient amount");
 			}
 		}
 
@@ -122,6 +122,18 @@ namespace Industries.Data.Implementation
 			mResources = mResourcesLookup
 				.Select(p => new ResourcePackage(p.Key, p.Value))
 				.ToArray();
+		}
+
+		private string GetResourceName(short resourceId)
+		{
+			try
+			{
+				return mResourcesConfig.GetResourceConfig(resourceId).Name;
+			}
+			catch (UnknownResourceException)
+			{
+				return "Unknown";
+			}
 		}
 	}
 }

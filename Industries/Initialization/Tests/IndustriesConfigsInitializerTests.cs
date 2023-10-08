@@ -3,7 +3,6 @@ using Core.Initialization.Implementation;
 using Industries.Configs;
 using Industries.Initialization.Implementation;
 using NUnit.Framework;
-using Resources.Configs;
 
 namespace Industries.Initialization.Tests
 {
@@ -23,7 +22,6 @@ namespace Industries.Initialization.Tests
 		{
 			var container = new InitializationContainer();
 
-			Assert.IsFalse(container.Has<IItemsLoadingTimeConfig>());
 			Assert.IsFalse(container.Has<IIndustriesConfig>());
 			Assert.IsFalse(container.Has<IIndustryProductionConfig>());
 			Assert.IsFalse(container.Has<IIndustryProgressionConfig>());
@@ -31,7 +29,6 @@ namespace Industries.Initialization.Tests
 			var initializer = new IndustriesConfigsInitializer();
 			await initializer.Run(container);
 
-			Assert.IsTrue(container.Has<IItemsLoadingTimeConfig>());
 			Assert.IsTrue(container.Has<IIndustriesConfig>());
 			Assert.IsTrue(container.Has<IIndustryProductionConfig>());
 			Assert.IsTrue(container.Has<IIndustryProgressionConfig>());
