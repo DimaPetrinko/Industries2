@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Core.Initialization;
 using Industries.Configs;
+using Resources.Configs;
 using WPFIndustryPresentation.MainWindow;
 using WPFIndustryPresentation.MainWindow.Implementation;
 using WPFIndustryPresentation.World;
@@ -14,9 +15,11 @@ namespace WPFEntryPoint.Initialization
 			var worldData = container.Get<IWorldData>();
 			var industriesConfig = container.Get<IIndustriesConfig>();
 			var industryProductionConfig = container.Get<IIndustryProductionConfig>();
+			var resourcesConfig = container.Get<IResourcesConfig>();
 			var mainWindowPresenter = new MainWindowPresenter(
 				industriesConfig,
 				industryProductionConfig,
+				resourcesConfig,
 				worldData,
 				new MainWindow());
 

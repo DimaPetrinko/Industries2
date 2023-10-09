@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Input;
-using Items;
 using Resources;
-using WPFIndustryPresentation.Utilities;
+using Resources.Configs;
 
 namespace WPFIndustryPresentation.Industry.Implementation
 {
@@ -14,12 +12,14 @@ namespace WPFIndustryPresentation.Industry.Implementation
 	{
 		private static readonly Regex sRegex = new Regex("[^0-9.-]+");
 
-		private readonly Dictionary<string, ItemType> mItemTypes;
+		private readonly IResourcesConfig mResourcesConfig;
+		private readonly Dictionary<string, short> mItemTypes;
 
 		public ResourcePackage SelectedResource { get; private set; }
 
-		public ResourceWindow()
+		public ResourceWindow(IResourcesConfig resourcesConfig)
 		{
+			mResourcesConfig = resourcesConfig;
 			InitializeComponent();
 
 			mItemTypes = GetItemTypesAsStringToItemTypeDictionary();
@@ -31,12 +31,13 @@ namespace WPFIndustryPresentation.Industry.Implementation
 			}
 		}
 
-		private static Dictionary<string, ItemType> GetItemTypesAsStringToItemTypeDictionary()
+		private Dictionary<string, short> GetItemTypesAsStringToItemTypeDictionary()
 		{
-			return Enum
-				.GetValues(typeof(ItemType))
-				.Cast<ItemType>()
-				.ToDictionary(t => StringUtilities.SplitCamelCase(t.ToString()), t => t);
+			return mResourcesConfig
+				.AllResourceConfigs
+				.ToDictionary(
+					p => p.Value.Name,
+					p => p.Key);
 		}
 
 		private void OnApplyButtonClicked(object sender, RoutedEventArgs e)

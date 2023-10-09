@@ -4,6 +4,7 @@ using System.Linq;
 using System.Windows;
 using Industries.Data;
 using Resources;
+using Resources.Configs;
 using WPFIndustryPresentation.Utilities;
 
 namespace WPFIndustryPresentation.Industry.Implementation
@@ -21,7 +22,8 @@ namespace WPFIndustryPresentation.Industry.Implementation
 		private const string cCurrentAmountText = "Current amount: {0}";
 		private const string cCapacityText = "Capacity: {0}";
 
-		private Dictionary<ActionButtonType, ActionButton> mActionButtons;
+		private readonly IResourcesConfig mResourcesConfig;
+		private readonly Dictionary<ActionButtonType, ActionButton> mActionButtons;
 
 		public Window Window => this;
 
@@ -61,10 +63,11 @@ namespace WPFIndustryPresentation.Industry.Implementation
 			set => Dispatcher.Invoke(() => OutputCapacityLabel.Content = string.Format(cCapacityText, value));
 		}
 
-		public IndustryWindow()
+		public IndustryWindow(IResourcesConfig resourcesConfig)
 		{
 			InitializeComponent();
 
+			mResourcesConfig = resourcesConfig;
 			mActionButtons = new Dictionary<ActionButtonType, ActionButton>
 			{
 				{ ActionButtonType.Production, new ActionButton(ProduceButton, CancelProductionButton) },
@@ -141,7 +144,7 @@ namespace WPFIndustryPresentation.Industry.Implementation
 
 		private void OnLoadInputButtonClicked(object sender, RoutedEventArgs e)
 		{
-			var resourceWindow = new ResourceWindow();
+			var resourceWindow = new ResourceWindow(mResourcesConfig);
 			if (resourceWindow.ShowDialog().GetValueOrDefault())
 			{
 				LoadInputClicked?.Invoke(resourceWindow.SelectedResource);
@@ -155,7 +158,7 @@ namespace WPFIndustryPresentation.Industry.Implementation
 
 		private void OnUnloadOutputButtonClicked(object sender, RoutedEventArgs e)
 		{
-			var resourceWindow = new ResourceWindow();
+			var resourceWindow = new ResourceWindow(mResourcesConfig);
 			if (resourceWindow.ShowDialog().GetValueOrDefault())
 			{
 				UnloadOutputClicked?.Invoke(resourceWindow.SelectedResource);

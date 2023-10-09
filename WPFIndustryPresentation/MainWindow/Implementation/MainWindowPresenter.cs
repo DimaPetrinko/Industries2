@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using Industries.Configs;
+using Resources.Configs;
 using WPFIndustryPresentation.Industry.Implementation;
 using WPFIndustryPresentation.World;
 
@@ -9,18 +10,21 @@ namespace WPFIndustryPresentation.MainWindow.Implementation
 	{
 		private readonly IIndustriesConfig mIndustriesConfig;
 		private readonly IIndustryProductionConfig mProductionConfig;
+		private readonly IResourcesConfig mResourcesConfig;
 		private readonly IWorldData mWorldData;
 		private readonly IMainView mView;
 
 		public MainWindowPresenter(
 			IIndustriesConfig industriesConfig,
 			IIndustryProductionConfig productionConfig,
+			IResourcesConfig resourcesConfig,
 			IWorldData worldData,
 			IMainView view
 		)
 		{
 			mIndustriesConfig = industriesConfig;
 			mProductionConfig = productionConfig;
+			mResourcesConfig = resourcesConfig;
 			mWorldData = worldData;
 			mView = view;
 			mView.Selected += OnSelected;
@@ -44,7 +48,7 @@ namespace WPFIndustryPresentation.MainWindow.Implementation
 
 		private void OnSelected(IndustryInfo industryInfo)
 		{
-			var industryWindow = new IndustryWindow();
+			var industryWindow = new IndustryWindow(mResourcesConfig);
 			industryWindow.Owner = mView.Window;
 			var industryHandle = mWorldData.Get(industryInfo.Id);
 			var industryPresenter = new IndustryPresenter(
