@@ -13,7 +13,7 @@ namespace Industries.Initialization.Implementation
 		private IIndustriesConfig mIndustriesConfig;
 		private IIndustryProductionConfig mProductionConfig;
 		private IIndustryProgressionConfig mProgressionConfig;
-		private IItemsLoadingTimeConfig mItemsLoadingTimeConfig;
+		private IResourcesConfig mResourcesConfig;
 		private IIndustryFactory mFactory;
 
 		public Task Run(IInitializationContainer container)
@@ -34,7 +34,7 @@ namespace Industries.Initialization.Implementation
 			mIndustriesConfig = container.Get<IIndustriesConfig>();
 			mProductionConfig = container.Get<IIndustryProductionConfig>();
 			mProgressionConfig = container.Get<IIndustryProgressionConfig>();
-			mItemsLoadingTimeConfig = container.Get<IItemsLoadingTimeConfig>();
+			mResourcesConfig = container.Get<IResourcesConfig>();
 			mFactory = container.Get<IIndustryFactory>();
 		}
 
@@ -45,7 +45,7 @@ namespace Industries.Initialization.Implementation
 				id,
 				recipe,
 				mProgressionConfig,
-				mItemsLoadingTimeConfig);
+				mResourcesConfig);
 			return industryHandle;
 		}
 	}

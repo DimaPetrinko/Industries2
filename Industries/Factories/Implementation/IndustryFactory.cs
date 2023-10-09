@@ -11,13 +11,13 @@ namespace Industries.Factories.Implementation
 			short id,
 			Recipe productionRecipe,
 			IIndustryProgressionConfig progressionConfig,
-			IItemsLoadingTimeConfig itemsLoadingTimeConfig
+			IResourcesConfig resourcesConfig
 		)
 		{
 			var stateData = new IndustryStateData(id);
 			var progressionData = new IndustryProgressionData();
-			var inputStorageData = new IndustryStorageData();
-			var outputStorageData = new IndustryStorageData();
+			var inputStorageData = new IndustryStorageData(resourcesConfig);
+			var outputStorageData = new IndustryStorageData(resourcesConfig);
 
 			var progression = new IndustryProgression(progressionData, progressionConfig);
 
@@ -27,7 +27,7 @@ namespace Industries.Factories.Implementation
 				inputStorageData,
 				outputStorageData,
 				progressionConfig,
-				itemsLoadingTimeConfig,
+				resourcesConfig,
 				productionRecipe
 			);
 

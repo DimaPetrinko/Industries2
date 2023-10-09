@@ -3,10 +3,7 @@ using System.Threading.Tasks;
 using Core.Initialization;
 using Industries.Configs;
 using Industries.Configs.Implementation;
-using Items;
 using Resources;
-using Resources.Configs;
-using Resources.Configs.Implementation;
 
 namespace Industries.Initialization.Implementation
 {
@@ -15,28 +12,11 @@ namespace Industries.Initialization.Implementation
 		public Task Run(IInitializationContainer container)
 		{
 			// TODO: create factories for configs too
-			container.Bind(CreateItemsLoadingTimeConfig());
 			container.Bind(CreateIndustriesConfig());
 			container.Bind(CreateIndustryProductionConfig());
 			container.Bind(CreateIndustryProgressionConfig());
 
 			return Task.CompletedTask;
-		}
-
-		private static IItemsLoadingTimeConfig CreateItemsLoadingTimeConfig()
-		{
-			var values = new Dictionary<ItemType, float>
-			{
-				{ ItemType.None, 0f },
-				{ ItemType.Wood, 3f },
-				{ ItemType.Planks, 2f },
-				{ ItemType.Coal, 4f },
-				{ ItemType.Ore, 4f },
-				{ ItemType.Metal, 2f },
-				{ ItemType.Instruments, 1.5f },
-				{ ItemType.Goods, 1.5f },
-			};
-			return new BinaryItemsLoadingTimeConfig(values);
 		}
 
 		private static IIndustriesConfig CreateIndustriesConfig()
@@ -61,38 +41,38 @@ namespace Industries.Initialization.Implementation
 			{
 				new Recipe(
 					new ResourcePackage[] { },
-					new[] { new ResourcePackage(ItemType.Wood, 1) }),
+					new[] { new ResourcePackage(1, 1) }),
 				new Recipe(
 					new ResourcePackage[] { },
-					new[] { new ResourcePackage(ItemType.Coal, 1) }),
+					new[] { new ResourcePackage(3, 1) }),
 				new Recipe(
 					new ResourcePackage[] { },
-					new[] { new ResourcePackage(ItemType.Ore, 1) }),
+					new[] { new ResourcePackage(4, 1) }),
 				new Recipe(
-					new[] { new ResourcePackage(ItemType.Wood, 1) },
-					new[] { new ResourcePackage(ItemType.Planks, 2) }),
-				new Recipe(
-					new[]
-					{
-						new ResourcePackage(ItemType.Coal, 1),
-						new ResourcePackage(ItemType.Ore, 1)
-					},
-					new[] { new ResourcePackage(ItemType.Metal, 2) }),
+					new[] { new ResourcePackage(1, 1) },
+					new[] { new ResourcePackage(2, 2) }),
 				new Recipe(
 					new[]
 					{
-						new ResourcePackage(ItemType.Planks, 1),
-						new ResourcePackage(ItemType.Metal, 1)
+						new ResourcePackage(3, 1),
+						new ResourcePackage(4, 1)
 					},
-					new[] { new ResourcePackage(ItemType.Instruments, 2) }),
+					new[] { new ResourcePackage(5, 2) }),
 				new Recipe(
 					new[]
 					{
-						new ResourcePackage(ItemType.Planks, 1),
-						new ResourcePackage(ItemType.Metal, 1),
-						new ResourcePackage(ItemType.Instruments, 1)
+						new ResourcePackage(2, 1),
+						new ResourcePackage(5, 1)
 					},
-					new[] { new ResourcePackage(ItemType.Goods, 2) }),
+					new[] { new ResourcePackage(6, 2) }),
+				new Recipe(
+					new[]
+					{
+						new ResourcePackage(2, 1),
+						new ResourcePackage(5, 1),
+						new ResourcePackage(6, 1)
+					},
+					new[] { new ResourcePackage(7, 2) }),
 			};
 			return new BinaryIndustryProductionConfig(recipes);
 		}
