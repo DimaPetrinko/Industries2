@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Core.Time.Implementation;
+using Core.Time.TestTime.Implementation;
 using NUnit.Framework;
 
-namespace Core.Time.Tests
+namespace Core.Time.TestTime.Tests
 {
-	public class TestTimeProviderTests
+	public class TestTimeTests
 	{
 		private ITimeProvider mTime;
 
