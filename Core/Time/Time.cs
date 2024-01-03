@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Core.Time.Implementation;
+using Core.Time.TaskTime.Implementation;
 
 namespace Core.Time
 {
 	public static class Time
 	{
-		private static ITimeProvider sTimeProvider = new RegularTimeProvider();
+		private static ITimeProvider sTimeProvider = new TaskTimeProvider();
 
 		public static double SecondsSinceStart => sTimeProvider.SecondsSinceStart;
 		public static Task Delay(int milliseconds, CancellationToken token = default)
@@ -27,7 +27,7 @@ namespace Core.Time
 
 		public static void ResetTimeProvider()
 		{
-			sTimeProvider = new RegularTimeProvider();
+			sTimeProvider = new TaskTimeProvider();
 		}
 	}
 }

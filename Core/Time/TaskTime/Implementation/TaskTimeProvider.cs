@@ -2,18 +2,13 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Core.Time.Implementation
+namespace Core.Time.TaskTime.Implementation
 {
-	internal class RegularTimeProvider : ITimeProvider
+	internal class TaskTimeProvider : ITimeProvider
 	{
-		private readonly DateTime mStartTime;
+		private readonly DateTime mStartTime = DateTime.UtcNow;
 
 		public double SecondsSinceStart => (DateTime.UtcNow - mStartTime).TotalSeconds;
-
-		public RegularTimeProvider()
-		{
-			mStartTime = DateTime.UtcNow;
-		}
 
 		public Task Delay(int milliseconds, CancellationToken token = default)
 		{

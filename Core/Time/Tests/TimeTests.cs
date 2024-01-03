@@ -1,12 +1,17 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Core.Time.Implementation;
+using Core.Time.TestTime.Implementation;
 using NUnit.Framework;
 
 namespace Core.Time.Tests
 {
 	public class TimeTests
 	{
+		[SetUp]
+		public void SetUp()
+		{
+			Time.ResetTimeProvider();
+		}
 		[Test]
 		public void Constructor_GivesDefaultTimeProvider()
 		{

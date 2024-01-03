@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Core.Time.Implementation
+namespace Core.Time.TestTime.Implementation
 {
 	public class TestTimeProvider : ITimeProvider
 	{
