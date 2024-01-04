@@ -3,7 +3,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Core.Time;
-using Core.Time.TestTime.Implementation;
+using Core.Time.Factories;
 using Industries.Configs;
 using Industries.Configs.Implementation;
 using Industries.Data;
@@ -76,7 +76,12 @@ namespace Industries.Model.Tests
 
 			mCts = new CancellationTokenSource();
 
-			Time.RegisterTimeProvider(new TestTimeProvider());
+			var timeFactory = new TimeFactory();
+			var timeProvider = timeFactory.CreateTimeProvider();
+			var timeModel = timeFactory.CreateStepTimeModel(1 / 30f, timeProvider);
+			Time.Initialize(timeModel, timeProvider);
+			Time.Start();
+			Time.Scale = 100f;
 		}
 
 		private static IIndustryProgressionConfig CreateProgressionConfig()
@@ -215,7 +220,6 @@ namespace Industries.Model.Tests
 		[Test]
 		public async Task LoadInput_Adds_UntilCancelled()
 		{
-			Time.ResetTimeProvider();
 			mProgressionData.Level = 1;
 			var resources = new[] { new ResourcePackage(7, 5) };
 
@@ -289,7 +293,6 @@ namespace Industries.Model.Tests
 		[Test]
 		public async Task UnloadOutput_Removes_UntilCancelled()
 		{
-			Time.ResetTimeProvider();
 			mProgressionData.Level = 1;
 			var resources1 = new[] { new ResourcePackage(7, 5) };
 			var resources2 = new[] { new ResourcePackage(7, 3) };
@@ -326,7 +329,6 @@ namespace Industries.Model.Tests
 		[Test]
 		public async Task UnloadOutput_Removes_UntilAbleIfRemovedWhileWaiting()
 		{
-			Time.ResetTimeProvider();
 			mProgressionData.Level = 1;
 			var resources1 = new[] { new ResourcePackage(7, 5) };
 			var resources2 = new[] { new ResourcePackage(7, 100) };
@@ -408,7 +410,6 @@ namespace Industries.Model.Tests
 				CreateProgressionConfig(),
 				CreateResourceConfig(),
 				recipe);
-			Time.ResetTimeProvider();
 			mProgressionData.Level = 4;
 			mInputStorageData.AddResource(new ResourcePackage(7, 5));
 
@@ -507,7 +508,6 @@ namespace Industries.Model.Tests
 		[Test]
 		public async Task LoadInput_ChangesStateAndRevertsAfterCancelled()
 		{
-			Time.ResetTimeProvider();
 			mProgressionData.Level = 1;
 			var resources = new[] { new ResourcePackage(7, 5) };
 
@@ -548,7 +548,6 @@ namespace Industries.Model.Tests
 		[Test]
 		public async Task UnloadOutput_ChangesStateAndRevertsAfterCancelled()
 		{
-			Time.ResetTimeProvider();
 			mProgressionData.Level = 1;
 			var resources1 = new[] { new ResourcePackage(7, 5) };
 			var resources2 = new[] { new ResourcePackage(7, 3) };
